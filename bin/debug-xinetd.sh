@@ -12,7 +12,7 @@ function debug_xinetd () {
   sudo killall xinetd
   wait
 
-  less -S +g "$LOGFN"
+  less -S -- "$LOGFN"
   return 0
 }
 

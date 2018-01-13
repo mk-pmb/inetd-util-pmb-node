@@ -5,11 +5,11 @@
 function node_resolve () {
   local RESO='require.resolve(process.argv[1])'
   local NAMES=()
-  readarray NAMES <<<"${*//[: ]/$'\n'}"
+  readarray -t NAMES <<<"${*//[: ]/$'\n'}"
   local PKG=
   for PKG in "${NAMES[@]}"; do
     [ -n "$PKG" ] || continue
-    "$NODEJS_BIN" -p "$RESO" -- "$PKG" 2>/dev/null && return 0
+    "$NODEJS_CMD" -p "$RESO" -- "$PKG" 2>/dev/null && return 0
   done
   return 2
 }

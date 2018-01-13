@@ -1,0 +1,64 @@
+# -*- coding: utf-8, tab-width: 2 -*-
+
+service hello_nodejs_world
+{
+  # NB: xinetd _expects_ "{" on a line of its own.
+  # For xinetd config options, `man 5 xinetd.conf`.
+  # For what all those `env += LW_` are, read `../bin/logwrap.md`.
+
+  disable = no
+  socket_type = stream
+  protocol = tcp
+
+  type = UNLISTED
+  # ^-- i.e. don't check /etc/services
+
+  interface = 127.0.0.1
+  port = 1336
+  wait = no
+  # ^-- no = give us client connections,
+  #     yes = give us the server socket.
+  #   * Access control won't easily work with a server socket,
+  #     probably because it has no peer IP address yet.
+
+  user = nobody
+  group = nogroup
+  server = /usr/lib/node_modules/inetd-util-pmb/bin/logwrap.sh
+  # server_args =
+
+  # Flood our syslog a bit slower in case we mess up later steps:
+  env += LW_DELAY=2s
+
+  # And even slower if it was because nodejs failed:
+  env += LW_FAIL_WAIT=20s
+
+  # Run at low priority:
+  nice = 10
+
+  # Set up our usual NODE_PATH:
+  env += LW_SOURCE=/etc/profile
+
+  # env += LW_DUMPENV=/tmp/hello_nodejs_world.log
+  # env += LW_STDOUT=.
+  # env += LW_STDERR=/tmp/hello_nodejs_world.log
+
+  # Run a bash REPL before starting node?
+  # env += LW_BASH_REPL=/tmp/xinetd_debug_repl
+  # For insecure but easy debugging, create the pipe yourself:
+  #   mkfifo --mode=0666 /tmp/xinetd_debug_repl
+
+  # With wait=no, you can actually use the client connection for REPL input:
+  # env += LW_BASH_REPL=/dev/stdin
+
+  # Node action!
+  env += LW_ENVDEC=eval
+  env += LW_EVAL=url:console.log(%22Hello%20Node.js%20World!%22);
+
+
+
+
+
+
+
+
+}

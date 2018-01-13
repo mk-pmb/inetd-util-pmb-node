@@ -35,6 +35,24 @@ All examples assume that you install this package into a directory
 `/usr/lib/node_modules/inetd-util-pmb`. A symlink is fine, too.
 
 
+
+Getting started
+---------------
+
+If you're new to `xinetd`, start with the included example service:
+
+  1. Copy [`docs/example/hello_nodejs_world`](docs/example/hello_nodejs_world)
+      to `/etc/xinetd.d`
+  1. Open the copy in your favorite editor.
+  1. Run `bin/debug-xinetd.sh` in one terminal,
+  1. and `rlwrap netcat -vvvv localhost 1336` in another one.
+  1. After very few seconds, you should be greeted with `Hello Node.js World!`
+  1. In the xinetd debug terminal, press Enter to stop it,
+      then `q` to quit the log viewer (`less`).
+  1. Future versions may even come with an example service that
+      uses socket activation.
+
+
 Scripts
 -------
 

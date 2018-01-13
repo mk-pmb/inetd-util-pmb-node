@@ -2,11 +2,23 @@
 # -*- coding: utf-8, tab-width: 2 -*-
 
 
-function decode_envvars () {
+function import_decode_envvars () {
   local VARS=() KEY= VAL= CODEC=
+
+  # first, import all LV_ vars to CFG, so we can unset them.
+  for KEY in "${LW_VARNAMES[@]}"; do
+    VAL=
+    eval VAL='$'"$KEY"
+    KEY="${KEY#LW_}"
+    KEY="${KEY,,}"
+    CFG["$KEY"]="$VAL"
+  done
+
   readarray -t VARS <<<"${LW_ENVDEC//[: ]/$'\n'}"
   for KEY in "${VARS[@]}"; do
-    eval VAL='$'"{$KEY}"
+    KEY="${KEY,,}"
+    KEY="${KEY#lw_}"
+    VAL="${CFG[$KEY]}"
     CODEC="${VAL%%:*}"
     [ "$CODEC" == "$VAL" ] && continue
     VAL="${VAL#*:}"
@@ -18,20 +30,9 @@ function decode_envvars () {
       * ) CODEC=;;
     esac
     [ -n "$CODEC" ] && VAL="${VAL%,}"
-    case "$KEY" in
-      KW_* )
-        KEY="${KEY#KW_}"
-        KEY="${KEY,,}"
-        CFG["$KEY"]="$VAL";;
-      * )
-        eval "$KEY"='$VAL'
-        export "$KEY"
-        declare -px | grep -Fe "$KEY=" -A 1 >&2
-    esac
+    CFG["$KEY"]="$VAL"
   done
-  if [ "$LW_FUNC" == "$FUNCNAME" ]; then
-    declare -pA
-  fi
+  [ "$LW_FUNC" == "$FUNCNAME" ] && declare -pA
   return 0
 }
 
@@ -53,4 +54,4 @@ function unbase64 () {
 function urldecode () { perl -pe 's~%([0-9a-f]{2})~chr hex $1~sieg'; }
 
 
-[ "$1" == --lib ] && return 0; decode_envvars "$@"; exit $?
+[ "$1" == --lib ] && return 0; import_decode_envvars "$@"; exit $?
