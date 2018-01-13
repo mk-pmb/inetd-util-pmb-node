@@ -1,0 +1,28 @@
+{ "name": "inetd-util-pmb",
+  "version": "0.0.1",
+  "description": "Scripts to help run (and debug) node scripts via (x)inetd socket activation.",
+  "keywords": [ "inetd", "xinetd" ],
+
+  "author": "M.K. (https://github.com/mk-pmb)",
+  "homepage": "https://github.com/mk-pmb/inetd-util-pmb-node/#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mk-pmb/inetd-util-pmb-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mk-pmb/inetd-util-pmb-node/issues"
+  },
+
+  "private": false, "license": "ISC",
+
+  "main": "iu.js",
+  "scripts": { "test": "nodejs test/all.js" },
+  "directories": { "test": "test" },
+
+  "dependencies": {},
+  "devDependencies": {
+  },
+
+
+  "npm vs. BOM = Unexpected token": "-*- coding: UTF-8 -*-"
+}
