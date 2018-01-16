@@ -36,7 +36,11 @@ service hello_nodejs_world
   nice = 10
 
   # Set up our usual NODE_PATH:
-  env += LW_SOURCE=/etc/profile
+  env += LW_SOURCE_INIT=/etc/profile
+
+  # Your optional opportunity to adjust stuff from inside
+  # (e.g. `export GREETING=Goodbye`):
+  env += LW_SOURCE_LATE=?/etc/hello_nodejs_world.rc
 
   # env += LW_DUMPENV=/tmp/hello_nodejs_world.log
   # env += LW_STDOUT=.
@@ -52,7 +56,7 @@ service hello_nodejs_world
 
   # Node action!
   env += LW_ENVDEC=eval
-  env += LW_EVAL=url:console.log(%22Hello%20Node.js%20World!%22);
+  env += LW_EVAL=url:console.log(process.env.GREETING%20%7C%7C%20%22Hello%20Node.js%20World!%22);
 
 
 

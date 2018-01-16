@@ -2,8 +2,29 @@
 # -*- coding: utf-8, tab-width: 2 -*-
 
 
-function logwrap () {
+function logwrap_failwait () {
   local -A CFG=()
+  CFG[fail_wait]="$LW_FAIL_WAIT"
+  local FAIL_WAIT="$LW_FAIL_WAIT"
+
+  logwrap_core "$@"
+  local CORE_RV=$?
+  [ "$CORE_RV" == 0 ] && FAIL_WAIT=
+
+  if [ -n "$FAIL_WAIT" ]; then
+    echo "W: core failed (rv=$CORE_RV)," \
+      "gonna LW_FAIL_WAIT for $FAIL_WAIT (now: $(date +'%F %T'))" >&2
+    sleep "$FAIL_WAIT"
+    echo "D: awoke from LW_FAIL_WAIT at $(date +'%F %T')" >&2
+  fi
+
+  return $CORE_RV
+}
+
+
+function logwrap_core () {
+  cd / || return $?$(echo "E: Failed to chdir to /. Flinching." >&2)
+
   local LIST=() ITEM= KEY= VAL=
   [ -n "$USER" ] || USER="$(whoami)"
   [ -n "$LW_DELAY" ] && sleep "$LW_DELAY"
@@ -40,9 +61,11 @@ function logwrap () {
   fi
 
   if [ -n "$LW_SYSLOG_TAG" ]; then
+    FAIL_WAIT=    # disable the outer fail_wait
     LW_DUMPENV_FLAGS=append \
-      LW_SYSLOG_TAG= \
-      "$FUNCNAME" "$@" |& logger --tag "$LW_SYSLOG_TAG"
+      LW_SYSLOG_TAGGED="$LW_SYSLOG_TAG" LW_SYSLOG_TAG= \
+      LW_DELAYED="$LW_DELAY" LW_DELAY= \
+      logwrap_failwait "$@" |& logger --tag "$LW_SYSLOG_TAG"
     return "${PIPESTATUS[0]}"
   fi
 
@@ -53,25 +76,23 @@ function logwrap () {
   [ "$LW_STDOUT" != . ] || exec 1>&2 || return $?$(
     echo "E: Failed to redirect stdout to stderr. (Bug?)" >&2)
 
-  local NODEJS_CMD="$( best_avail_cmd node{js,} )"
-
   # ===== switch to CFG[] ===== ===== ===== ===== ===== #
   import_decode_envvars || return $?$(
     echo "E: Failed to import_decode_envvars" >&2)
   unset -v LW_DUMMY "${LW_VARNAMES[@]}"
 
-  readarray -t LIST <<<"${CFG[source]//[: ]/$'\n'}"
-  for ITEM in "${LIST[@]}"; do
-    [ -n "$ITEM" ] || continue
-    source "$ITEM" || return $?$(
-      echo "E: Failed to source '$ITEM'" >&2)
-  done
+  multisource "${CFG[source_init]}" || return $?
+
+  local NODEJS_CMD=()
+  readarray -t NODEJS_CMD <<<"${CFG[nodejs_cmd]}"
+  [ -n "${NODEJS_CMD[*]}" ] || NODEJS_CMD=( "$(
+    best_avail_cmd node{js,} )" )
 
   if [ -n "${CFG[cwd_resolve]}" ]; then
     CFG[cwd_resolve]="$(node_resolve "${CFG[cwd_resolve]}")"
     [ -n "${CFG[cwd_resolve]}" ] || return $?$(
       echo "E: Unable to resolve any of LW_CWD_RESOLVE. cwd is $PWD" >&2)
-    CFG[cwd_resolve]="${CFG[cwd_resolve]}%/*}"
+    CFG[cwd_resolve]="${CFG[cwd_resolve]%/*}"
     cd -- "${CFG[cwd_resolve]}" || return $?$(echo "H: cwd is $PWD" >&2)
     # you can still refine this path with LW_CWD
   fi
@@ -95,8 +116,11 @@ function logwrap () {
   [ -n "${CFG[script]}" ] && SRV_ARGS+=( "${CFG[script]}" -- )
 
   local SRV_CMD=()
-  readarray -t SRV_CMD <<<"${CFG[srv_prog]:-$NODEJS_CMD}"
+  readarray -t SRV_CMD <<<"${CFG[server_cmd]}"
+  [ -n "${SRV_CMD[*]}" ] || SRV_CMD=( "${NODEJS_CMD[@]}" )
   # SRV_CMD=( printf '‹%s›\n' "${SRV_CMD[@]}" )
+
+  multisource "${CFG[source_late]}" || return $?
 
   if [ -n "${CFG[dumpenv]}" ]; then
     (
@@ -125,14 +149,6 @@ function logwrap () {
         ;;
       * ) eval "$VAL";;
     esac
-
-    VAL="${CFG[fail_wait]}"
-    if [ -n "$VAL" ]; then
-      echo "W: server failed (rv=$SRV_RV)," \
-        "gonna LW_FAIL_WAIT for $VAL (now: $(date +'%F %T'))" >&2
-      sleep "$VAL"
-      echo "D: awoke from LW_FAIL_WAIT at $(date +'%F %T')" >&2
-    fi
   fi
 
   return $SRV_RV
@@ -173,4 +189,4 @@ function logwrap_debug_chapter () {
 
 
 
-logwrap "$@"; exit $?
+logwrap_failwait "$@"; exit $?

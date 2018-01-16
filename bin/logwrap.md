@@ -81,13 +81,43 @@ These codecs are supported:
   * `urldecode`: `%hh` hex decoding, using `perl` and a regexp.
 
 
-### LW_SOURCE
+### LW_SOURCE_INIT
 
 A colon-separated list of files that logwrap should `source`
-(meaning the so-named `bash` command).
+(meaning the so-named `bash` command) before it tries to use node.js.
 
 You may want to set this to `/etc/profile` in order to get
 your usual env vars, including `NODE_PATH`.
+
+List item magic:
+  * A leading `?` marks an item as optional, and the `?` will be removed.
+  * A leading `~/` will be replaced with the value of the the `$HOME`
+    environment variable and a `/`.
+  * If the resulting path is not a file (e.g. because it doesn't exist),
+    logwrap will complain and fail – unless the item is optional,
+    in which case it will be skipped silently.
+  * If the source operation fails, logwrap will complain and fail,
+    even for optional items.
+
+
+### LW_NODEJS_CMD
+
+What command to use to invoke node.js.
+Should be something like `nodejs`, `node`,
+or an absolute path to your node.js binary.
+
+  * Default: Try to guess, with a fallback of `node`.
+  * This program is used for stuff like `LW_CWD_RESOLVE`.
+
+You can use newline characters to sneak arguments in.
+
+
+### LW_SERVER_CMD
+
+The command to be used for the actual server invocation.
+Default: use `LW_NODEJS_CMD`
+
+You can use newline characters to sneak arguments in.
 
 
 ### LW_CWD_RESOLVE
@@ -107,6 +137,13 @@ Try to chdir into whatever remains.
 
 Try to chdir into whatever this variable's value is.
 This happens after `LW_CWD_RESOLVE` so you can refine its result.
+
+
+### LW_SOURCE_LATE
+
+Like `LW_SOURCE_INIT` but it happens later,
+especially after the chdirs,
+which may give you better opportunities for some relative paths.
 
 
 ### LW_REQUIRE
