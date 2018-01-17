@@ -16,6 +16,7 @@ function import_decode_envvars () {
 
   readarray -t VARS <<<"${LW_ENVDEC//[: ]/$'\n'}"
   for KEY in "${VARS[@]}"; do
+    [ -n "$KEY" ] || continue
     KEY="${KEY,,}"
     KEY="${KEY#lw_}"
     VAL="${CFG[$KEY]}"
