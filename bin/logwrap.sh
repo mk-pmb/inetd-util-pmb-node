@@ -83,6 +83,12 @@ function logwrap_core () {
 
   multisource "${CFG[source_init]}" || return $?
 
+  if [ -n "${CFG[node_path]}" ]; then
+    [ -z "$NODE_PATH" ] || NODE_PATH+=':'
+    NODE_PATH+="${CFG[node_path]}"
+    export NODE_PATH
+  fi
+
   local NODEJS_CMD=()
   readarray -t NODEJS_CMD <<<"${CFG[nodejs_cmd]}"
   [ -n "${NODEJS_CMD[*]}" ] || NODEJS_CMD=( "$(

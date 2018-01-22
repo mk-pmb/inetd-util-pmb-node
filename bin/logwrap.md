@@ -89,6 +89,11 @@ A colon-separated list of files that logwrap should `source`
 You may want to set this to `/etc/profile` in order to get
 your usual env vars, including `NODE_PATH`.
 
+  * Some versions of node ship with a profile script that discards
+    the previous value of `NODE_PATH`, so with them there's no use
+    in setting `NODE_PATH` via your xinetd service manifest.
+    You can add paths via `LW_NODE_PATH` though.
+
 List item magic:
   * A leading `?` marks an item as optional, and the `?` will be removed.
   * A leading `~/` will be replaced with the value of the the `$HOME`
@@ -98,6 +103,15 @@ List item magic:
     in which case it will be skipped silently.
   * If the source operation fails, logwrap will complain and fail,
     even for optional items.
+
+
+### LW_NODE_PATH
+
+Will be added to your `NODE_PATH` environment variable.
+If it has been set already, old and new value are separated with a colon.
+
+Evaluated after `LW_SOURCE_INIT` in order to work even when a profile
+script discards the old value (see above).
 
 
 ### LW_NODEJS_CMD
