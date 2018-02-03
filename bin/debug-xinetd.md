@@ -10,10 +10,15 @@ that allows us to redirect its output into a debug log file:
 
   * [`debug-xinetd.sh`](debug-xinetd.sh)
 
-When you've had enough, press
+It greets you with a list of available commands.
+The most important one is "d", which starts a debug session in background.
 
-  * Ctrl+C to quit the debug script and have `xinetd` run havoc all it wants
-  * or Enter to have the debug script kill `xinetd` and quit cleanly. ;-)
+  * The debug mode xinetd instance will be stopped as soon as you
+    supply another command. (Or just press Enter.)
+  * Depending on your terminal size, its output will probably flood away
+    the command list and the input prompt.
+    Nonetheless, the prompt will be waiting for your next command.
+
 
 
 

@@ -5,7 +5,8 @@ inetd-util-pmb
 <!--/#echo -->
 
 <!--#echo json="package.json" key="description" -->
-Scripts to help run (and debug) node scripts via (x)inetd socket activation.
+Scripts to help run (and debug) programs via (x)inetd socket activation.
+Optimized for Node.js but also works with Perl, Python, mostly anything.
 <!--/#echo -->
 
 
