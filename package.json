@@ -1,5 +1,5 @@
 { "name": "inetd-util-pmb",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Scripts to help run (and debug) programs via (x)inetd socket activation. Optimized for Node.js but also works with Perl, Python, mostly anything.",
   "keywords": [ "inetd", "xinetd" ],
 

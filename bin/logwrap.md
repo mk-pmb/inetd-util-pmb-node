@@ -131,7 +131,13 @@ You can use newline characters to sneak arguments in.
 The command to be used for the actual server invocation.
 Default: use `LW_NODEJS_CMD`
 
-You can use newline characters to sneak arguments in.
+* Special value `/` means to skip this part when constructing the
+  effective command.
+  Use this if you want to "just write your command" in the `server_args`
+  setting of your xinetd service config.
+  It's a bit like configuring `server = /usr/bin/env` except you can use all
+  of the other `LW_*` features, like `LW_STDERR=/dev/null`.
+* You can use newline characters to sneak arguments in.
 
 
 ### LW_CWD_RESOLVE

@@ -124,6 +124,7 @@ function logwrap_core () {
   local SRV_CMD=()
   readarray -t SRV_CMD <<<"${CFG[server_cmd]}"
   [ -n "${SRV_CMD[*]}" ] || SRV_CMD=( "${NODEJS_CMD[@]}" )
+  [ "${SRV_CMD[*]}" == / ] && SRV_CMD=()
   # SRV_CMD=( printf '‹%s›\n' "${SRV_CMD[@]}" )
 
   multisource "${CFG[source_late]}" || return $?
