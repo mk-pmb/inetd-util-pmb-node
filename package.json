@@ -1,5 +1,5 @@
 { "name": "inetd-util-pmb",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Scripts to help run (and debug) programs via (x)inetd socket activation. Optimized for Node.js but also works with Perl, Python, mostly anything.",
   "keywords": [ "inetd", "xinetd" ],
 
@@ -16,6 +16,9 @@
   "private": false, "license": "ISC",
 
   "main": "iu.js",
+  "bin": {
+    "inetd-util-pmb-xinetd-shim": "bin/xinetd_shim.sh"
+  },
   "scripts": { "test": "nodejs test/all.js" },
   "directories": { "test": "test" },
 
