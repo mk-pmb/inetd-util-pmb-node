@@ -3,6 +3,7 @@
 
 
 function logwrap_failwait () {
+  local SELFPATH="$(readlink -m -- "$BASH_SOURCE"/..)"
   local -A CFG=()
   CFG[fail_wait]="$LW_FAIL_WAIT"
   local FAIL_WAIT="$LW_FAIL_WAIT"
@@ -30,7 +31,6 @@ function logwrap_core () {
   [ -n "$LW_DELAY" ] && sleep "$LW_DELAY"
   [ -n "$LW_UMASK" ] && umask "${LW_UMASK:-0022}"
 
-  local SELFPATH="$(readlink -m "$BASH_SOURCE"/..)"
   for ITEM in "$SELFPATH"/../lib/lib_*.sh; do
     source "$ITEM" --lib || return $?$(
       echo "E: Failed to source '$ITEM'" >&2)
@@ -94,14 +94,7 @@ function logwrap_core () {
   [ -n "${NODEJS_CMD[*]}" ] || NODEJS_CMD=( "$(
     best_avail_cmd node{js,} )" )
 
-  if [ -n "${CFG[cwd_resolve]}" ]; then
-    CFG[cwd_resolve]="$(node_resolve "${CFG[cwd_resolve]}")"
-    [ -n "${CFG[cwd_resolve]}" ] || return $?$(
-      echo "E: Unable to resolve any of LW_CWD_RESOLVE. cwd is $PWD" >&2)
-    CFG[cwd_resolve]="${CFG[cwd_resolve]%/*}"
-    cd -- "${CFG[cwd_resolve]}" || return $?$(echo "H: cwd is $PWD" >&2)
-    # you can still refine this path with LW_CWD
-  fi
+  logwrap_cwd_resolve || return $?
   [ -z "${CFG[cwd]}" ] || cd -- "${CFG[cwd]}" || return $?$(
     echo "H: cwd is $PWD" >&2)
 
@@ -162,12 +155,36 @@ function logwrap_core () {
 }
 
 
+function logwrap_cwd_resolve () {
+  local CWR="${CFG[cwd_resolve]}"
+  [ -n "$CWR" ] || return 0
+  local RESO=
+  RESO="$(node_resolve "$CWR")"
+  [ -n "$RESO" ] || return $?$(
+    echo "E: Unable to resolve any of LW_CWD_RESOLVE = '$CWR'." \
+      "cwd is '$PWD', NODE_PATH is '$NODE_PATH'." >&2)
+  RESO="$(dirname -- "$RESO")"
+  cd -- "$RESO" || return $?$(echo "H: cwd is $PWD" >&2)
+  # you can still refine this path with LW_CWD
+}
+
+
 function partree { pstree --show-p{arent,id}s --long --uid-changes $$; }
 
 
 function logwrap_debug () {
   echo "lang='$LANG' language='$LANGUAGE'"
   echo "LW_ vars: ${LW_VARNAMES[*]}"
+  echo
+
+  echo '=== config: ==='
+  echo "keys: ${!CFG[*]}"
+  local KEY=
+  for KEY in "${!CFG[@]}"; do
+    printf '%q = %q\n' "$KEY" "${CFG[$KEY]}"
+  done
+  echo
+
   export LANG{,UAGE}=en_US.UTF-8
   local CHAP=logwrap_debug_chapter
   $CHAP id
