@@ -186,10 +186,40 @@ Given to nodejs via the `-p` option.
 
 ### LW_SCRIPT
 
-Path to your node script, if you want to run one.
+Path (or potential paths) to your node script, if you want to run one.
 
 Added to the nodejs command after all the potential `-r`/`-e`/`-p` options.
 Also, `--` is added after the script path.
+
+__Syntax:__
+List of script candidates, separated by any combination of
+U+000A line feed, U+0020 space, and/or U+007C vertical line (|).
+
+* If there are any candidates at all (even empty/skipped),
+  it indicates that you intended to run a script.
+  Thus, if `logwrap` runs out of candidates without a result,
+  it will fail with a fatal error.
+* Empty entries are skipped.
+* If an entry starts with U+003F question mark (?), strip that question mark
+  and treat the entry as opportunistic, i.e. skip silently if does not point
+  to a file.
+* If an entry starts with U+003A colon (:), strip that colon and treat the
+  remaining entry as a module identifier.
+* When a non-opportunistic entry turns out to not point to a file,
+  `logwrap` fails with a fatal error.
+* When an entry points to a file, that is the script to run, and
+  any remaining candidates will be ignored.
+
+__Multiple non-opportunistic entries:__
+Allowing them may seem useless at first glance, as only the first of them
+can ever be checked. The idea here is to allow simple chaining of potentially
+empty entries in shell scripts:
+
+```bash
+LW_SCRIPT="${DEBUG_OVERRIDES[script]}|${USER_CONFIG[script]}|
+  |${SYSTEM_CONFIG[script]}|${VENDOR_DEFAULTS[script]}|main.js"
+```
+
 
 
 ### LW_BASH_REPL

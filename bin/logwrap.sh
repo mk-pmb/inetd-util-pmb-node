@@ -109,8 +109,8 @@ function logwrap_core () {
 
   [ -n "${CFG[eval]}" ] && SRV_ARGS+=( -e "${CFG[eval]}" )
   [ -n "${CFG[pval]}" ] && SRV_ARGS+=( -p "${CFG[pval]}" )
-  [ "${CFG[script]:0:1}" == : ] && CFG[script]="$(
-    node_resolve "${CFG[script]}")"
+
+  logwrap_parse_script_opt || return $?
   [ -n "${CFG[script]}" ] && SRV_ARGS+=( "${CFG[script]}" -- )
 
   local SRV_CMD=()
@@ -202,6 +202,45 @@ function logwrap_debug_chapter () {
   echo "=== $* ==="
   "$@"
 }
+
+
+function logwrap_parse_script_opt () {
+  # See logwrap.md for syntax.
+  local CANDIDATES="${CFG[script]}|"
+  [ -n "$CANDIDATES" ] || return 0
+  CANDIDATES="${CANDIDATES//'|'/ }"
+  CANDIDATES="${CANDIDATES//$'\n'/ }"
+
+  local ITEM= ORIG= OPPORTUNISTIC=
+  while [ -n "$CANDIDATES" ]; do
+    ITEM="${CANDIDATES%% *}"
+    CANDIDATES="${CANDIDATES#* }"
+    [ -n "$ITEM" ] || continue
+    ORIG="$ITEM"
+    OPPORTUNISTIC="${ITEM:0:1}"
+    [ "$OPPORTUNISTIC" == '?' ] || OPPORTUNISTIC=
+    ITEM="${ITEM#'?'}"
+    [ "${ITEM:0:1}" == : ] && ITEM="$(node_resolve "${ITEM:1}")"
+    if [ -f "$ITEM" ]; then
+      CFG[script]="$ITEM"
+      return 0
+    fi
+    [ -n "$OPPORTUNISTIC" ] && continue
+    [ "$ITEM" == "$ORIG" ] || ITEM+="' <- originally: '$ORIG"
+    echo E: "Script candidate entry does not point to a file: '$ITEM'" >&2
+    return 4
+  done
+  echo E: 'Cannot determine script to run: No more candidate entries.' >&2
+  return 4
+}
+
+
+
+
+
+
+
+
 
 
 
