@@ -13,7 +13,7 @@ function logwrap_failwait () {
   [ "$CORE_RV" == 0 ] && FAIL_WAIT=
 
   if [ -n "$FAIL_WAIT" ]; then
-    echo "W: core failed (rv=$CORE_RV)," \
+    echo "W: core failed (rv=$CORE_RV, pid=$$, ppid=$PPID)," \
       "gonna LW_FAIL_WAIT for $FAIL_WAIT (now: $(date +'%F %T'))" >&2
     sleep "$FAIL_WAIT"
     echo "D: awoke from LW_FAIL_WAIT at $(date +'%F %T')" >&2
