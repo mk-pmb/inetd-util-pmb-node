@@ -161,7 +161,11 @@ function logwrap_cwd_resolve () {
   RESO="$(node_resolve "$CWR")"
   [ -n "$RESO" ] || return $?$(
     echo "E: Unable to resolve any of LW_CWD_RESOLVE = '$CWR'." \
-      "cwd is '$PWD', NODE_PATH is '$NODE_PATH'." >&2)
+      "user is '$USER'." \
+      "home is '$HOME'." \
+      "cwd is '$PWD'."\
+      "NODE_PATH is '$NODE_PATH'." \
+      >&2)
   RESO="$(dirname -- "$RESO")"
   cd -- "$RESO" || return $?$(echo "H: cwd is $PWD" >&2)
   # you can still refine this path with LW_CWD
