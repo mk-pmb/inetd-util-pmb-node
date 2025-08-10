@@ -14,6 +14,8 @@ _"There is no way to put a SPACE in an environment variable."_
 If yours has the same problem, you can work around this with `LW_ENVDEC`,
 but only for vars that don't start with `LW_` or are listed below `LW_ENVDEC`.
 
+Even better solution: Use systemd instead.
+
 
 ### LW_DELAY
 
